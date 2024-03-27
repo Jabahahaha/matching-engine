@@ -1,9 +1,9 @@
-package model;
+package edu.harbourspace.university.matchingengine.manager.model;
 
 public class Order {
     private String originator;
     private String messageId;
-    private String side;
+    private Side side;
     private int size;
     private double price;
     private String productId;

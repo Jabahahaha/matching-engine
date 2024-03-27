@@ -1,4 +1,4 @@
-package model;
+package edu.harbourspace.university.matchingengine.manager.model;
 
 public class CancelMessage {
     private String messageId;

@@ -1,8 +1,7 @@
-package processor;
+package edu.harbourspace.university.matchingengine.manager.processor;
 
-import manager.TradeManager;
-import model.CancelMessage;
-import model.Order;
+import edu.harbourspace.university.matchingengine.manager.TradeManager;
+import edu.harbourspace.university.matchingengine.manager.model.Order;
 
 public class MessageProcessor {
     private final TradeManager tradeManager;
@@ -11,7 +10,7 @@ public class MessageProcessor {
         this.tradeManager = tradeManager;
     }
 
-    public void processMessage(String message) {
+    public Order processMessage(String message) {
         message = message.replaceAll(" +", "\t");
 
         String[] parts = message.trim().split("\\t");
@@ -24,7 +23,7 @@ public class MessageProcessor {
 
                 // Create a new Order object with the parsed data
                 Order order = new Order(parts[0], parts[1], parts[2], size, price, parts[5]);
-
+                return order;
                 // Process the order
                 tradeManager.processOrder(order);
             } catch (NumberFormatException e) {

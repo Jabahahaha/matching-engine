@@ -1,7 +1,7 @@
-package org.example;
+package edu.harbourspace.university.matchingengine.manager;
 
-import manager.TradeManager;
-import processor.MessageProcessor;
+import edu.harbourspace.university.matchingengine.manager.model.Order;
+import edu.harbourspace.university.matchingengine.manager.processor.MessageProcessor;
 
 import java.util.Scanner;
 
@@ -15,7 +15,8 @@ public class Main {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim();
                 if (!line.isEmpty()) {
-                    processor.processMessage(line);
+                    Order order = processor.processMessage(line);
+                    tradeManager.processOrder(order);
                     if ("FINISH".equals(line)) break;
                 }
             }

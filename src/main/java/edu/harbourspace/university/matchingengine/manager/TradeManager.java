@@ -1,6 +1,6 @@
-package manager;
+package edu.harbourspace.university.matchingengine.manager;
 
-import model.Order;
+import edu.harbourspace.university.matchingengine.manager.model.Order;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +36,8 @@ public class TradeManager {
                     && dfOrder.getPrice() >= externalOrder.getPrice())
                     || (dfOrder.getSide().equals("SELL") && externalOrder.getSide().equals("BUY")
                     && dfOrder.getPrice() <= externalOrder.getPrice()))) {
+
+                // ExecutedOrder called Trade
 
                 // Create executed order and add to executed trades list
                 Order executedOrder = new Order("DF", dfOrder.getMessageId(), dfOrder.getSide(),
