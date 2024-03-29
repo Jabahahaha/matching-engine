@@ -1,46 +1,40 @@
 package edu.harbourspace.university.matchingengine.manager.processor;
 
-import edu.harbourspace.university.matchingengine.manager.TradeManager;
+import edu.harbourspace.university.matchingengine.manager.manager.ITradeManager;
 import edu.harbourspace.university.matchingengine.manager.model.Order;
+import edu.harbourspace.university.matchingengine.manager.model.CancelMessage;
+import edu.harbourspace.university.matchingengine.manager.util.InputParser;
+import edu.harbourspace.university.matchingengine.manager.util.TradePrinter;
 
-public class MessageProcessor {
-    private final TradeManager tradeManager;
+public class MessageProcessor implements IMessageProcessor {
+    private final ITradeManager tradeManager;
+    private final TradePrinter tradePrinter;
+    private final InputParser inputParser;
 
-    public MessageProcessor(TradeManager tradeManager) {
+    public MessageProcessor(ITradeManager tradeManager, TradePrinter tradePrinter) {
         this.tradeManager = tradeManager;
+        this.tradePrinter = tradePrinter;
+        this.inputParser = new InputParser(); // Assumed to be a dependency
     }
 
-    public Order processMessage(String message) {
-        message = message.replaceAll(" +", "\t");
+    @Override
+    public void processMessage(String message) {
+        Object parsedInput = inputParser.parse(message);
 
-        String[] parts = message.trim().split("\\t");
-
-        if (parts.length == 6 && ("DF".equals(parts[0]) || "VE".equals(parts[0]))) {
-            try {
-                // Parse the size and price to ensure they are in the correct format
-                int size = Integer.parseInt(parts[3]);
-                double price = Double.parseDouble(parts[4]);
-
-                // Create a new Order object with the parsed data
-                Order order = new Order(parts[0], parts[1], parts[2], size, price, parts[5]);
-                return order;
-                // Process the order
-                tradeManager.processOrder(order);
-            } catch (NumberFormatException e) {
-                System.out.println("Error parsing numerical values for order: " + message);
-            }
-        }
-        // Check for cancel messages, which should have 3 parts
-        else if (parts.length == 3 && "DF".equals(parts[0]) && "CANCEL".equals(parts[2])) {
-            tradeManager.processCancelMessage(parts[1]);
-        }
-        // Check for the FINISH command, which should be a single part
-        else if (message.trim().equals("FINISH")) {
-            tradeManager.printTrades();
-        }
-        // If none of the above conditions are met, the message is unrecognized
-        else {
+        if (parsedInput instanceof Order) {
+            tradeManager.processOrder((Order) parsedInput);
+        } else if (parsedInput instanceof CancelMessage) {
+            tradeManager.processCancelMessage(((CancelMessage) parsedInput).getMessageId());
+        } else if ("FINISH".equalsIgnoreCase(message)) {
+            tradePrinter.printTrades(tradeManager.getExecutedTrades());
+        } else {
             System.out.println("Unrecognized message format: " + message);
         }
     }
+
+    public void printTrades() {
+        // Assuming getExecutedTrades is defined in the ITradeManager
+        tradePrinter.printTrades(tradeManager.getExecutedTrades());
+    }
+
 }

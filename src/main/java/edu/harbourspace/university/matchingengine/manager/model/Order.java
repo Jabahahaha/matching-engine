@@ -1,14 +1,14 @@
 package edu.harbourspace.university.matchingengine.manager.model;
 
 public class Order {
-    private String originator;
-    private String messageId;
-    private Side side;
-    private int size;
-    private double price;
-    private String productId;
+    private final Originator originator;
+    private final String messageId;
+    private final Side side;
+    private final int size;
+    private final double price;
+    private final String productId;
 
-    public Order(String originator, String messageId, String side, int size, double price, String productId) {
+    public Order(Originator originator, String messageId, Side side, int size, double price, String productId) {
         this.originator = originator;
         this.messageId = messageId;
         this.side = side;
@@ -18,7 +18,7 @@ public class Order {
     }
 
     // Getters
-    public String getOriginator() {
+    public Originator getOriginator() {
         return originator;
     }
 
@@ -26,7 +26,7 @@ public class Order {
         return messageId;
     }
 
-    public String getSide() {
+    public Side getSide() {
         return side;
     }
 
@@ -41,4 +41,5 @@ public class Order {
     public String getProductId() {
         return productId;
     }
+
 }
