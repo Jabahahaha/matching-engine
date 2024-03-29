@@ -12,22 +12,19 @@ public class InputParser {
 
         try {
             if (parts.length == 6) {
-                // Parse and return an Order object
                 Originator originator = Originator.valueOf(parts[0]);
                 Side side = Side.valueOf(parts[2]);
                 int size = Integer.parseInt(parts[3]);
                 double price = Double.parseDouble(parts[4]);
                 return new Order(originator, parts[1], side, size, price, parts[5]);
             } else if (parts.length == 3 && "CANCEL".equals(parts[2])) {
-                // Return cancel message information
-                return new CancelMessage(parts[1]); // Assuming you have a CancelMessage class
+                return new CancelMessage(parts[1]);
             } else {
-                // Handle FINISH or invalid input
-                return inputLine; // Return the raw input for further handling
+                return inputLine;
             }
         } catch (Exception e) {
             System.out.println("Error parsing input: " + inputLine);
-            return null; // or handle this as needed for your application
+            return null;
         }
     }
 }

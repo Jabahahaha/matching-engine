@@ -14,7 +14,7 @@ public class MessageProcessor implements IMessageProcessor {
     public MessageProcessor(ITradeManager tradeManager, TradePrinter tradePrinter) {
         this.tradeManager = tradeManager;
         this.tradePrinter = tradePrinter;
-        this.inputParser = new InputParser(); // Assumed to be a dependency
+        this.inputParser = new InputParser();
     }
 
     @Override
@@ -33,7 +33,6 @@ public class MessageProcessor implements IMessageProcessor {
     }
 
     public void printTrades() {
-        // Assuming getExecutedTrades is defined in the ITradeManager
         tradePrinter.printTrades(tradeManager.getExecutedTrades());
     }
 

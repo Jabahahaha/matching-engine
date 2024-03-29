@@ -1,7 +1,7 @@
 package edu.harbourspace.university.matchingengine.manager.model;
 
 public class CancelMessage {
-    private final String messageId; // If you don't reassign messageId, it should be final
+    private final String messageId;
 
     public CancelMessage(String messageId) {
         this.messageId = messageId;

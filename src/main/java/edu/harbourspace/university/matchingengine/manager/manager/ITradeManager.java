@@ -7,5 +7,5 @@ import java.util.List;
 public interface ITradeManager {
     void processOrder(Order order);
     void processCancelMessage(String messageId);
-    List<Trade> getExecutedTrades();  // Only this method related to trades
+    List<Trade> getExecutedTrades();
 }
