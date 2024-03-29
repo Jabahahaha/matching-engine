@@ -4,7 +4,7 @@ public class Order {
     private final Originator originator;
     private final String messageId;
     private final Side side;
-    private final int size;
+    private int size; // Removed the final modifier
     private final double price;
     private final String productId;
 
@@ -24,6 +24,10 @@ public class Order {
 
     public String getMessageId() {
         return messageId;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public Side getSide() {

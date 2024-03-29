@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 public class TradeManager implements ITradeManager {
     private final Map<String, Order> activeOrders = new HashMap<>();
@@ -22,53 +23,56 @@ public class TradeManager implements ITradeManager {
 
     @Override
     public void processOrder(Order order) {
-        // Adjusted to handle orders from VE as well
         if (order.getOriginator() == Originator.DF || order.getOriginator() == Originator.VE) {
-            // Check if the order can be matched or needs to be stored
             if (order.getOriginator() == Originator.DF) {
-                // Store DF orders and update position
                 activeOrders.put(order.getMessageId(), order);
                 updatePosition(order.getProductId(), order.getSide(), order.getSize());
             } else {
-                // Attempt to match VE orders with active DF orders
                 matchOrder(order);
             }
         }
     }
 
     private void matchOrder(Order externalOrder) {
-        for (Order dfOrder : new ArrayList<>(activeOrders.values())) {
+        List<Order> matchedOrders = new ArrayList<>(activeOrders.values());
+        if (externalOrder.getSide() == Side.SELL) {
+            matchedOrders.sort(Comparator.comparing(Order::getPrice).reversed().thenComparing(Order::getMessageId));
+        } else {
+            matchedOrders.sort(Comparator.comparing(Order::getPrice).thenComparing(Order::getMessageId));
+        }
+
+        for (Order dfOrder : matchedOrders) {
             if (isMatch(dfOrder, externalOrder) && isPositionValid(dfOrder, externalOrder)) {
-                executeTrade(dfOrder, externalOrder);
-                break;
+                int tradeSize = Math.min(dfOrder.getSize(), externalOrder.getSize());
+                executeTrade(dfOrder, externalOrder, tradeSize);
+                if (externalOrder.getSize() <= 0) {
+                    break;
+                }
             }
         }
     }
 
     private boolean isMatch(Order dfOrder, Order externalOrder) {
-        return dfOrder.getProductId().equals(externalOrder.getProductId())
-                && ((dfOrder.getSide() == Side.BUY && externalOrder.getSide() == Side.SELL
-                && dfOrder.getPrice() >= externalOrder.getPrice())
-                || (dfOrder.getSide() == Side.SELL && externalOrder.getSide() == Side.BUY
-                && dfOrder.getPrice() <= externalOrder.getPrice()));
+        return dfOrder.getProductId().equals(externalOrder.getProductId()) &&
+                ((dfOrder.getSide() == Side.BUY && externalOrder.getSide() == Side.SELL && dfOrder.getPrice() >= externalOrder.getPrice()) ||
+                        (dfOrder.getSide() == Side.SELL && externalOrder.getSide() == Side.BUY && dfOrder.getPrice() <= externalOrder.getPrice()));
     }
 
     private boolean isPositionValid(Order dfOrder, Order externalOrder) {
-        // Calculate what the new position would be
         int potentialPositionChange = externalOrder.getSize() * (dfOrder.getSide() == Side.BUY ? 1 : -1);
         int newPosition = positions.getOrDefault(dfOrder.getProductId(), 0) + potentialPositionChange;
-
-        // Check if the new position exceeds the maximum allowed position
         return Math.abs(newPosition) <= maximumPosition;
     }
 
-    private void executeTrade(Order dfOrder, Order externalOrder) {
-        Trade executedTrade = new Trade(dfOrder.getSide(), externalOrder.getSize(),
-                dfOrder.getPrice(), dfOrder.getProductId());
-
+    private void executeTrade(Order dfOrder, Order externalOrder, int tradeSize) {
+        Trade executedTrade = new Trade(dfOrder.getSide(), tradeSize, dfOrder.getPrice(), dfOrder.getProductId());
         executedTrades.add(executedTrade);
         activeOrders.remove(dfOrder.getMessageId());
-        updatePosition(dfOrder.getProductId(), dfOrder.getSide(), externalOrder.getSize());
+        dfOrder.setSize(dfOrder.getSize() - tradeSize);
+        if (dfOrder.getSize() > 0) {
+            activeOrders.put(dfOrder.getMessageId(), dfOrder);
+        }
+        updatePosition(dfOrder.getProductId(), dfOrder.getSide(), tradeSize);
     }
 
     private void updatePosition(String productId, Side side, int size) {
@@ -80,7 +84,6 @@ public class TradeManager implements ITradeManager {
     public void processCancelMessage(String messageId) {
         Order order = activeOrders.remove(messageId);
         if (order != null) {
-            // Revert position
             updatePosition(order.getProductId(), order.getSide() == Side.BUY ? Side.SELL : Side.BUY, order.getSize());
         }
     }
@@ -89,5 +92,4 @@ public class TradeManager implements ITradeManager {
     public List<Trade> getExecutedTrades() {
         return new ArrayList<>(executedTrades);
     }
-
 }

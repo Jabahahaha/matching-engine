@@ -19,14 +19,18 @@ public class MessageProcessor implements IMessageProcessor {
 
     @Override
     public void processMessage(String message) {
+        if ("FINISH".equalsIgnoreCase(message.trim())) {
+            tradePrinter.printTrades(tradeManager.getExecutedTrades());
+            return; // Exit the method if "FINISH" is encountered
+        }
+
+        // Continue with processing if it's not the "FINISH" command
         Object parsedInput = inputParser.parse(message);
 
         if (parsedInput instanceof Order) {
             tradeManager.processOrder((Order) parsedInput);
         } else if (parsedInput instanceof CancelMessage) {
             tradeManager.processCancelMessage(((CancelMessage) parsedInput).getMessageId());
-        } else if ("FINISH".equalsIgnoreCase(message)) {
-            tradePrinter.printTrades(tradeManager.getExecutedTrades());
         } else {
             System.out.println("Unrecognized message format: " + message);
         }
